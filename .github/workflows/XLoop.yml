@@ -1,0 +1,66 @@
+name: Reddit Auto Visit
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'  # Run every 10 minutes
+  workflow_dispatch:
+
+jobs:
+  visit-reddit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm init -y
+          npm install puppeteer puppeteer-core puppeteer-extra puppeteer-extra-plugin-stealth
+
+      - name: Create Puppeteer script
+        run: |
+          mkdir -p scripts
+          cat > scripts/reddit-visit.js << 'EOL'
+          const puppeteer = require('puppeteer-extra');
+          const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+          puppeteer.use(StealthPlugin());
+
+          async function visitReddit() {
+              const startTime = Date.now();
+              const fiveHours = 5 * 60 * 60 * 1000; // 5 hours in milliseconds
+              while (Date.now() - startTime < fiveHours) {
+                  try {
+                      console.log('Launching browser...');
+                      const browser = await puppeteer.launch({
+                          headless: 'new',
+                          executablePath: require('puppeteer').executablePath(),
+                          args: ['--no-sandbox', '--disable-setuid-sandbox']
+                      });
+                      const page = await browser.newPage();
+                      const redditUrl = 'https://x.com/On50311252/status/1900684195720294518';
+                      console.log(`Visiting: ${redditUrl}`);
+                      await page.goto(redditUrl, { waitUntil: 'networkidle2' });
+                      console.log('Page loaded successfully.');
+
+                      console.log('Closing browser...');
+                      await browser.close();
+                  } catch (error) {
+                      console.error('Error:', error.message);
+                  }
+              }
+              console.log('Finished 5-hour loop.');
+          }
+
+          visitReddit();
+          EOL
+
+      - name: Run Puppeteer script
+        run: |
+          echo "Starting 5-hour loop visiting r/openai2"
+          node scripts/reddit-visit.js
