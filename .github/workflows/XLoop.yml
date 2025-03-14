@@ -43,7 +43,7 @@ jobs:
                           args: ['--no-sandbox', '--disable-setuid-sandbox']
                       });
                       const page = await browser.newPage();
-                      const redditUrl = 'https://x.com/On50311252/status/1900684195720294518';
+                      const redditUrl = 'https://bit.ly/4bzTObA';
                       console.log(`Visiting: ${redditUrl}`);
                       await page.goto(redditUrl, { waitUntil: 'networkidle2' });
                       console.log('Page loaded successfully.');
